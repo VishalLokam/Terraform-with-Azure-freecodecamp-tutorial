@@ -76,3 +76,15 @@ resource "azurerm_subnet_network_security_group_association" "tz_az_nsg_subnet_a
   network_security_group_id = azurerm_network_security_group.tf_az_nsg_1.id
 }
 
+# Add a public address 
+resource "azurerm_public_ip" "tf_az_public_ip_1" {
+  name                = "tf_az_public_ip_1"
+  resource_group_name = azurerm_resource_group.tf_az_rg_1.name
+  location            = azurerm_resource_group.tf_az_rg_1.location
+  allocation_method   = "Dynamic"
+
+  tags = {
+    environment = "dev"
+  }
+}
+
