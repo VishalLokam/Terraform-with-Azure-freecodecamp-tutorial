@@ -88,3 +88,52 @@ resource "azurerm_public_ip" "tf_az_public_ip_1" {
   }
 }
 
+# This will create a new NIC
+resource "azurerm_network_interface" "tf_az_nic_1" {
+  name                = "tf_az_nic_1"
+  location            = azurerm_resource_group.tf_az_rg_1.location
+  resource_group_name = azurerm_resource_group.tf_az_rg_1.name
+
+  ip_configuration {
+    name                          = "ipconfig_1"
+    subnet_id                     = azurerm_subnet.tf_az_subnet_1.id
+    private_ip_address_allocation = "Dynamic"
+    # associating public ip with this NIC
+    public_ip_address_id = azurerm_public_ip.tf_az_public_ip_1.id
+  }
+
+  tags = {
+    environment = "dev"
+  }
+
+}
+
+
+# This will create a new virtual machine
+resource "azurerm_linux_virtual_machine" "tf_az_vm_1" {
+  name                = "tfazvm1"
+  resource_group_name = azurerm_resource_group.tf_az_rg_1.name
+  location            = azurerm_resource_group.tf_az_rg_1.location
+  size                = "Standard_B1s"
+  admin_username      = "adminuser"
+  network_interface_ids = [
+    azurerm_network_interface.tf_az_nic_1.id,
+  ]
+
+  admin_ssh_key {
+    username   = "adminuser"
+    public_key = file("~/.ssh/tf_az_ssh_key.pub")
+  }
+
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+  }
+
+  source_image_reference {
+    publisher = "Canonical"
+    offer     = "0001-com-ubuntu-server-jammy"
+    sku       = "22_04-lts"
+    version   = "latest"
+  }
+}
