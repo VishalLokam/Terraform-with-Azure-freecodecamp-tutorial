@@ -138,4 +138,35 @@ resource "azurerm_linux_virtual_machine" "tf_az_vm_1" {
     sku       = "22_04-lts"
     version   = "latest"
   }
+
+  provisioner "local-exec" {
+    command = templatefile( "${var.host_os}-ssh-script.tpl", {
+      hostname = self.public_ip_address,
+      user = "adminuser"
+      identityfile = "~/.ssh/tf_az_ssh_key"
+    })
+
+    # interpreter = [ "Powershell", "-Command" ]
+    # for linux or mac
+    # interpreter = ["bash","-c"]
+
+    # condition interpreter based on os variable
+    interpreter = var.host_os == "windows" ? [ "Powershell", "-Command" ] : ["bash","-c"]
+    
+  
+  }
+
+  tags = {
+    environment = "dev"
+  }
+}
+
+
+data "azurerm_public_ip" "tf_az_ip_data_1" {
+  name = azurerm_public_ip.tf_az_public_ip_1.name
+  resource_group_name = azurerm_resource_group.tf_az_rg_1.name
+}
+
+output "tf_az_op_public_ip_1" {
+  value = "${azurerm_linux_virtual_machine.tf_az_vm_1.name}: ${data.azurerm_public_ip.tf_az_ip_data_1.ip_address}"
 }
