@@ -120,6 +120,8 @@ resource "azurerm_linux_virtual_machine" "tf_az_vm_1" {
     azurerm_network_interface.tf_az_nic_1.id,
   ]
 
+  custom_data = filebase64("customdata.tpl")
+
   admin_ssh_key {
     username   = "adminuser"
     public_key = file("~/.ssh/tf_az_ssh_key.pub")
